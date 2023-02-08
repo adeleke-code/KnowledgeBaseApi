@@ -19,6 +19,7 @@ urlpatterns = [
     path('password', ChangePasswordView.as_view()),
     path('refresh', TokenRefreshView().as_view(), name="refresh_token"),
     path('auth/', include('djoser.urls')),
+    path('user/<str:pk>', UserLoginView.as_view()),
 
 
 
