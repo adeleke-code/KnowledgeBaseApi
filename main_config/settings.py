@@ -29,6 +29,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("MYKEY")
 
+
+# ALLOWED_HOSTS = ['', '127.0.0.1', '0.0.0.0:$PORT']
+ALLOWED_HOST = []
+
+DEBUG = True
+CSRF_TRUSTED_ORIGINS = ['','https://*.127.0.0.1']
+
+CORS_ALLOW_ALL_ORIGIN = True
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 

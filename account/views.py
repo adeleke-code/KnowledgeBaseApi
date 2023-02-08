@@ -97,7 +97,7 @@ class AdminLoginView(APIView):
             serializer.is_valid(raise_exception=True)
             user = authenticate(request, email = serializer.validated_data['email'], password = serializer.validated_data['password'])
             if user:
-                if user.is_admin:
+                if user.is_superuser:
                     try:
                         refresh = RefreshToken.for_user(user)
                         user_details = {}

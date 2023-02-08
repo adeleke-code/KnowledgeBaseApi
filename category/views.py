@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from .serializers import CategorySerializer, TitlesSerializer
 from rest_framework import viewsets
-from .models import Category, Titles
+from .models import Category, Articles
 
 # Create your views here.
 
@@ -12,8 +12,8 @@ class CategoryView(viewsets.ModelViewSet):
 
 
 
-class TileView(viewsets.ModelViewSet):
-    queryset = Titles.objects.all()
+class TitleView(viewsets.ModelViewSet):
+    queryset = Articles.objects.all()
     serializer_class = TitlesSerializer
 
     
