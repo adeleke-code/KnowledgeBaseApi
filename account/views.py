@@ -58,82 +58,52 @@ class AllAdminUsersView(ListAPIView):
 
 
 
-
 class UserLoginView(APIView):
     def post(self, request):
-            serializer = LoginSerializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            user = authenticate(request, email = serializer.validated_data['email'], password = serializer.validated_data['password'])
-            if user:
-                if not user.is_admin:
-                    try:
-                        refresh = RefreshToken.for_user(user)
-                        user_details = {}
-                        user_details['email'] = user.email
-                        user_details['access_token'] = str(refresh.access_token)
-                        user_details['refresh_token'] = str(refresh)
-                        user_logged_in.send(sender=user.__class__,
-                                            request=request, user=user)
+        serializer = LoginSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = authenticate(request, email = serializer.validated_data['email'], password = serializer.validated_data['password'])
+        if user and user.is_active:
+            if user.is_admin:
+                try:
+                    refresh = RefreshToken.for_user(user)
+                    user_details = {}
+                    user_details['email'] = user.email
+                    user_details['access_token'] = str(refresh.access_token)
+                    user_details['refresh_token'] = str(refresh)
+                    user_logged_in.send(sender=user.__class__,
+                                        request=request, user=user)
 
-                        data = {
-                        'message' : "User Login successful",
-                        'data' : user_details,
-                        }
-                        return Response(data, status=status.HTTP_200_OK)
-                    except Exception as e:
-                        raise e   
-                else:
                     data = {
-                        'message'  : "failed",
-                        'errors': 'This account is not a user account'
-                        }
-                    return Response(data, status=status.HTTP_403_FORBIDDEN)
-            else:
-                data = {
-                    'message'  : "failed",
-                    'errors': 'Please provide a valid email and password'
-                    }
-                return Response(data, status=status.HTTP_401_UNAUTHORIZED)
-
-
-class AdminLoginView(APIView):
-    def post(self, request):
-            serializer = LoginSerializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            user = authenticate(request, email = serializer.validated_data['email'], password = serializer.validated_data['password'])
-            if user:
-                if user.is_superuser:
-                    try:
-                        refresh = RefreshToken.for_user(user)
-                        user_details = {}
-                        user_details['email'] = user.email
-                        user_details['access_token'] = str(refresh.access_token)
-                        user_details['refresh_token'] = str(refresh)
-                        user_logged_in.send(sender=user.__class__,
-                                            request=request, user=user)
-
-                        data = {
                         'message' : "Admin Login successful",
                         'data' : user_details,
-                        }
-                        return Response(data, status=status.HTTP_200_OK)
-                    except Exception as e:
-                        raise e   
-                else:
-                    data = {
-                        'message'  : "failed",
-                        'errors': 'This Admin account is not active'
-                        }
-                    return Response(data, status=status.HTTP_403_FORBIDDEN)
-            else:
-                data = {
-                    'message'  : "failed",
-                    'errors': 'Please provide a valid email and password for the admin'
                     }
-                return Response(data, status=status.HTTP_401_UNAUTHORIZED)
+                    return Response(data, status=status.HTTP_200_OK)
+                except Exception as e:
+                    raise e
+            else:
+                try:
+                    refresh = RefreshToken.for_user(user)
+                    user_details = {}
+                    user_details['email'] = user.email
+                    user_details['access_token'] = str(refresh.access_token)
+                    user_details['refresh_token'] = str(refresh)
+                    user_logged_in.send(sender=user.__class__,
+                                        request=request, user=user)
 
-
-
+                    data = {
+                        'message' : "User Login successful",
+                        'data' : user_details,
+                    }
+                    return Response(data, status=status.HTTP_200_OK)
+                except Exception as e:
+                    raise e
+        else:
+            data = {
+                'message'  : "failed",
+                'errors': 'The account is not active'
+                }
+            return Response(data, status=status.HTTP_403_FORBIDDEN)
 
 class ChangePasswordView(generics.GenericAPIView):
         """
