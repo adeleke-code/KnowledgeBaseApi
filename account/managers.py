@@ -34,10 +34,10 @@ class UserManager(BaseUserManager):
 
         return self._create_user(email, password, **extra_fields)
 
-    # def create_admin(self, email, password=None, **extra_fields):
-    #     user = self._create_user(email, password, is_admin=True, is_staff=True, is_superuser=True, **extra_fields)
+    def create_admin(self, email, password=None, **extra_fields):
+        user = self._create_user(email, password, is_admin=True, is_staff=True, is_superuser=True, **extra_fields)
 
 
-    #     user.save(using=self._db)
+        user.save(using=self._db)
         
-    #     return user
+        return user

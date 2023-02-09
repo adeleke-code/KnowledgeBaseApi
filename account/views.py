@@ -10,12 +10,15 @@ from rest_framework import permissions, status
 from .serializers import UserRegistrationSerializer, AdminRegistrationSerializer, UserDetailSerializer, LoginSerializer, UserLogoutSerializer, ChangePasswordSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.signals import user_logged_in
+from .permissions import IsAdmin
 # Create your views here.
 
 User = get_user_model()
 
 
 class UserRegisterView(APIView):
+    permission_classes = (IsAdmin,)
+
     def post(self, request):
         serializer = UserRegistrationSerializer(data=request.data)
         data = {}
@@ -43,11 +46,13 @@ class AdminRegisterView(APIView):
 
 
 class AllUsersView(ListAPIView):
+    permission_classes = (IsAdmin,)
     queryset = User.objects.all()
     serializer_class = UserDetailSerializer
 
 
 class AllAdminUsersView(ListAPIView):
+    permission_classes = (IsAdmin,)
     queryset = User.objects.filter(is_admin=True)
     serializer_class = UserDetailSerializer
 

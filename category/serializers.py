@@ -9,7 +9,7 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class TitlesSerializer(serializers.ModelSerializer):
+class ArticleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Articles
         fields = '__all__'

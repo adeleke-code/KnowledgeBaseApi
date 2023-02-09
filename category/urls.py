@@ -1,12 +1,13 @@
 from django.urls import path, include
-from .views import CategoryView, TitleView
-from rest_framework import routers
+from . import views
 
-
-router = routers.DefaultRouter()
-router.register(r'list', CategoryView)
-router.register(r'title', TitleView)
 
 urlpatterns = [
-    path('/', include(router.urls))
+    path('create', views.CreateCategoryView.as_view()),
+    path('update/<int:pk>', views.UpdateCategory.as_view()),
+    path('get', views.GetCategory.as_view()),
+    path('article', views.CreateArticleView.as_view()),
+    path('article/update/<int:pk>', views.UpdateArticleView.as_view()),
+    path('article/get', views.GetArticle.as_view())
+
 ]
