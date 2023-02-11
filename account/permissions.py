@@ -13,7 +13,7 @@ class IsAdmin(permissions.BasePermission):
     Allows access only to only admin users.
     """
     def has_permission(self, request, view):
-        if request.user.is_superuser:
+        if request.user.is_admin:
             return True
         else:
             raise AuthenticationFailed(detail="Authentication credentials were not provided oh ")

@@ -56,11 +56,6 @@ class GetCategory(APIView):
         return Response(data)
 
 
-
-
-
-
-
 class CreateArticleView(APIView):
     queryset = Articles.objects.all()
     serializer_class = ArticleSerializer

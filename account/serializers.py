@@ -3,6 +3,7 @@ from djoser.serializers import UserCreateSerializer
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from rest_framework.response import Response
 from rest_framework import status
+from . generators import generate_password
 # from django.contrib.auth.models import User
 from django.contrib.auth import get_user_model
 
@@ -10,28 +11,16 @@ User = get_user_model()
 
 Admin = User.objects.filter(is_admin=True)
 
-class UserRegistrationSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(style={"input_type": "password"}, write_only=True, required=False)    
+    class Meta():
+        model = User
+        fields = ['id', "name", "email", "password"]
 
-	password2 = serializers.CharField(style={'input_type': 'password'}, write_only=True)
-	class Meta:
-		model = User
-		fields = ['id', 'name', 'email', 'password', 'password2']
-		extra_kwargs = {
-				'password': {'write_only': True},
-		}	
-	def	save(self):
-		account = User(
-					name=self.validated_data['name'],
-					email=self.validated_data['email']
-				)
-		password = self.validated_data['password']
-		password2 = self.validated_data['password2']
-		if password != password2:
-			raise serializers.ValidationError({'password': 'Passwords must match.'})
-		account.set_password(password)
-		account.save()
+    def create(self, validate_data):
 
-		return account
+        return User.objects.create_user(**validate_data)
+
 
 class AdminRegistrationSerializer(serializers.ModelSerializer):
 
@@ -62,7 +51,10 @@ class UserDetailSerializer(serializers.ModelSerializer):
         fields = [
 			'id',
             'email',
-            'name'
+            'name',
+            'is_active',
+            'is_staff',
+            'is_admin'
         ]
 
     

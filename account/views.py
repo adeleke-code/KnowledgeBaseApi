@@ -7,28 +7,42 @@ from rest_framework.generics import ListAPIView
 from django.contrib.auth import get_user_model
 from rest_framework.views import APIView
 from rest_framework import permissions, status
-from .serializers import UserRegistrationSerializer, AdminRegistrationSerializer, UserDetailSerializer, LoginSerializer, UserLogoutSerializer, ChangePasswordSerializer
+from .serializers import UserSerializer, AdminRegistrationSerializer, UserDetailSerializer, LoginSerializer, UserLogoutSerializer, ChangePasswordSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.signals import user_logged_in
 from .permissions import IsAdmin
+from . generators import generate_password
 # Create your views here.
 
 User = get_user_model()
 
 
 class UserRegisterView(APIView):
-    permission_classes = (IsAdmin,)
+    # permission_classes = (IsAdmin,)
 
     def post(self, request):
-        serializer = UserRegistrationSerializer(data=request.data)
-        data = {}
-        serializer.is_valid(raise_exception=True)
-        account = serializer.save()
-        data['response'] = 'successfully registered a new user.'
-        data['email'] = account.email
-        data['name'] = account.name
+        serializer = UserSerializer(data=request.data)
+        if serializer.is_valid():
+                
+            password = serializer.validated_data['password'] = generate_password()
+            serializer.save()
+            
+            data = {
+                'message' : "success",
+                'data' : serializer.data,
+                'password': password
+            }
 
-        return Response(data)
+            return Response(data, status = status.HTTP_201_CREATED)
+
+        else:
+            data = {
+
+                'message' : "failed",
+                'error' : serializer.errors,
+            }
+
+            return Response(data, status = status.HTTP_400_BAD_REQUEST)
 
 class AdminRegisterView(APIView):
     def post(self, request):
@@ -41,6 +55,44 @@ class AdminRegisterView(APIView):
         data['name'] = account.name
 
         return Response(data)
+
+class UserData(APIView):
+    # permission_classes = (IsAdmin,)
+    def get(self, request, pk):
+        try:
+            user_data = User.objects.get(id=pk)
+        except User.DoesNotExist:
+            return Response({"error": "user not found"}, 404)
+        serializer = UserDetailSerializer(user_data)
+        data = {
+            "user_data": serializer.data
+        }
+        return Response(data)
+    def put(self, request, pk):
+        try:
+            instance = User.objects.get(id=pk)
+        except User.DoesNotExist:
+            return Response({'error': 'user not found'}, status=404)
+
+        serializer = UserDetailSerializer(instance, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=400)
+    def delete(self, request, pk):
+        try:
+            user = User.objects.get(id=pk)
+        except User.DoesNotExist:
+            return Response({"error": "user not found"}, 404)
+        if user.is_staff == True:
+            try:
+                user.is_staff = False
+            except User.DoesNotExist:
+                return Response({"error": "user not found"}, 404)
+        else:
+            return Response({"error": "user is not a staff"}, 404)
+        user.save()
+        return Response({"message": "user successfully deactivated"}, 200)
 
 
 
@@ -63,7 +115,7 @@ class UserLoginView(APIView):
         serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = authenticate(request, email = serializer.validated_data['email'], password = serializer.validated_data['password'])
-        if user and user.is_active:
+        if user.is_staff:
             if user.is_admin:
                 try:
                     refresh = RefreshToken.for_user(user)
@@ -139,7 +191,7 @@ class ChangePasswordView(generics.GenericAPIView):
 
 class LogoutView(APIView):
     serializer_class = UserLogoutSerializer
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (IsAuthenticated,)
 
     def post(self, request):
         serializer = self.serializer_class(data=request.data)

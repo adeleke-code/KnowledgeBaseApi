@@ -36,8 +36,10 @@ ALLOWED_HOST = []
 DEBUG = True
 CSRF_TRUSTED_ORIGINS = ['','https://*.127.0.0.1']
 
-CORS_ALLOW_ALL_ORIGIN = True
-
+# CORS_ALLOW_ALL_ORIGIN = True
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -53,10 +55,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'whitenoise.runserver_nostatic',
+    'corsheaders',
+    'cloudinary_storage',
+    'cloudinary',
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
     'djoser',
     'account',
+    'admin_config',
     'category'
 ]
 
@@ -94,12 +101,20 @@ WSGI_APPLICATION = 'main_config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+environment = os.getenv("ENVIRONMENT", "Development")
+import dj_database_url
+
+
+if environment == "Development":
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
+elif environment == "Staging":
+    DATABASES = {}
+    DATABASES['default'] = dj_database_url.config()
 
 
 # Password validation
@@ -136,7 +151,11 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
@@ -174,3 +193,17 @@ REST_FRAMEWORK = {
 AUTHENTICATION_BACKEND = ['django.contrib.auth.backends.ModelBackend']
 
 
+# Email settings
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'oluwafemiadeleke13@gmail.com'
+EMAIL_HOST_PASSWORD = 'adeleke2000'
+
+
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.getenv("CLOUD_NAME"),
+    'API_KEY': os.getenv("API_KEY"),
+    'API_SECRET': os.getenv("API_SECRET")
+}
