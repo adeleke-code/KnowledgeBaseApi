@@ -193,13 +193,6 @@ REST_FRAMEWORK = {
 AUTHENTICATION_BACKEND = ['django.contrib.auth.backends.ModelBackend']
 
 
-# Email settings
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'oluwafemiadeleke13@gmail.com'
-EMAIL_HOST_PASSWORD = 'adeleke2000'
 
 
 CLOUDINARY_STORAGE = {
